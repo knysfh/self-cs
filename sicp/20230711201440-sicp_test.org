@@ -1048,3 +1048,42 @@ b)
 #2/3
 #-2/3
 #-2/3
+
+# 2.2
+(define (make-segment s e)
+  (cons s e))
+
+(define (start-segment x)
+  (car x))
+
+(define (end-segment x)
+  (cdr x))
+
+(define (make-point x y)
+  (cons x y))
+
+(define (x-point x)
+  (car x))
+
+(define (y-point x)
+  (cdr x))
+
+(define (midpoint-segment x)
+  (define (average a b) (/ (+ a b) 2.0))
+  (let ((start (start-segment x))
+        (end (end-segment x)))
+    (make-point (average (x-point start) (x-point end)) (average (y-point start) (y-point end)))))
+
+(define (print-point p) 
+   (newline)
+   (display "(")
+   (display (x-point p)) 
+   (display ",")
+   (display (y-point p)) 
+   (display ")"))
+
+(print-point (midpoint-segment (make-segment (make-point 2 3) (make-point 10 15))))
+# (6.0,9.0)
+
+# 2.3
+
