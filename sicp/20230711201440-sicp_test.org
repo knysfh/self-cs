@@ -445,7 +445,7 @@ http://community.schemewiki.org/?sicp-ex-1.13
 (search-for-primes 1000 1090)
 #1009 *** 18253
 
-# 简单理解，求出的幂值已经超出2^63次方，所以需要使用软件进行计算，其计算速度远慢于硬件计算
+# 简单理解,求出的幂值已经超出2^63次方,所以需要使用软件进行计算,其计算速度远慢于硬件计算
 
 # 1.26
 # 由于解释器采用应用序过程,使用显式乘法后,乘法两端的(square (expmod base (/ exp 2) m))需要在应用乘法*之前就要计算出来,由于(square (expmod base (/ exp 2) m))都是递归调用,所以增加了两倍的计算量
@@ -1086,4 +1086,93 @@ b)
 # (6.0,9.0)
 
 # 2.3
+#基于左下右上的两个点确定矩形
+(define (make-segment s e)
+  (cons s e))
 
+(define (start-segment x)
+  (car x))
+
+(define (end-segment x)
+  (cdr x))
+
+(define (make-point x y)
+  (cons x y))
+
+(define (x-point x)
+  (car x))
+
+(define (y-point x)
+  (cdr x))
+
+(define (midpoint-segment x)
+  (define (average a b) (/ (+ a b) 2.0))
+  (let ((start (start-segment x))
+        (end (end-segment x)))
+    (make-point (average (x-point start) (x-point end)) (average (y-point start) (y-point end)))))
+
+(define (print-point p) 
+   (newline)
+   (display "(")
+   (display (x-point p)) 
+   (display ",")
+   (display (y-point p)) 
+   (display ")"))
+
+(define (compute-perimeter x)
+  (let ((left-bottom-point (start-segment x))
+        (right-top-point (end-segment x)))
+        (* 2 (+ (- (y-point left-bottom-point) (y-point right-top-point)) (- (x-point left-bottom-point) (x-point right-top-point))))))
+
+(compute-perimeter (make-segment (make-point 10 15) (make-point 2 3)))
+#40
+
+# 2.4
+(define (cons x y)
+  (lambda (m) (m x y)))
+(define (car z)
+  (z (lambda (p q) p)))
+(define (cdr z)
+  (z (lambda (p q) q)))
+
+(cdr (cons -5 3))
+#3
+
+# 2.5
+# 请证明可以只用数和算术运算表示非负整数的序对,方法是把a和b的序对表示为2^a和3^b的乘积。
+# 根据基本算术定理,每个正整数都可以被分解为唯一的素数相乘序列,我们可以利用这一点,通过分解cons计算出的整数的序列,从而复原car和cdr
+# 举个例子,72可以分解成72=2^3∗3^2=2∗2∗2∗3∗3,要取出car,我们就不断地进行除二操作,每次除二进行一次计数,直到不能除尽为止
+
+(define (expt x y)
+  (define (iter r n)
+    (if (= n 0)
+      r
+      (iter (* x r) (- n 1))))
+  (iter 1 y))
+
+(define (car z)
+  (if (= 0 (remainder z 2))
+    (+ 1 (car (/ z 2)))
+    0))
+
+(define (cdr z)
+  (if (= 0 (remainder z 3))
+    (+ 1 (cdr (/ z 3)))
+    0))
+
+(define (cons a b)
+  (* (expt 2 a) (expt 3 b)))
+
+(car (cons 3 2))
+(cdr (cons 3 2))
+#3
+#2
+
+# 2.6
+# 这道题需要将函数具象才能更好理解,建议看此教程:https://boxnos.hatenablog.com/entry/20070723/1186253252
+(define one (lambda (f) (lambda (x) (f x))))
+(define two (lambda (f) (lambda (x) (f (f x)))))
+(define (add-1 n)
+  (lambda (f)
+    (lambda (x)
+      (f ((n f) x)))))
