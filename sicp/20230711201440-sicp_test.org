@@ -1176,3 +1176,38 @@ b)
   (lambda (f)
     (lambda (x)
       (f ((n f) x)))))
+
+# 2.7
+(define (add-iterval x y)
+  (make-interval (+ (lower-bound x) (lower-bound y))
+                 (+ (upper-bound x) (upper-bound y))))
+
+(define (make-interval a b)
+  (cons a b))
+
+(define (upper-bound x)
+  (max (car x) (cdr x)))
+
+(define (lower-bound x)
+  (min (car x) (cdr x)))
+
+(add-iterval (cons 6.12 7.48) (cons 5.2 4.3))
+#(10.42 . 12.68)
+
+# 2.8
+#区间之差不能只用上界-上界,下界-下界,例如(1, 3) (3, 4)采用上-上,下-下会变成(2, 1)
+(define (make-interval a b)
+  (cons a b))
+
+(define (upper-bound x)
+  (max (car x) (cdr x)))
+
+(define (lower-bound x)
+  (min (car x) (cdr x)))
+
+(define (sub-interval x y)
+  (make-interval (- (lower-bound x) (upper-bound y))
+                 (- (upper-bound x) (lower-bound y))))
+
+(sub-interval (cons 2 7) (cons 8 3))
+#(-6 . 4)
