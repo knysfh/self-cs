@@ -1397,15 +1397,46 @@ a*b = [Ca*(1 - 0.5*Ta)*Cb*(1 - 0.5*Tb), Ca*(1 + 0.5*Ta)*Cb*(1 + 0.5*Tb)]
 
 (define (same-parity a . y)
   (let ((prop (remainder a 2)))
-    (define (iter target iterms)
-      (if (null? iterms)
+    (define (iter target items)
+      (if (null? items)
           target
-          (if (= (remainder (car iterms) 2) prop)
-              (iter (append target (list (car iterms))) (cdr iterms))
-           (iter target (cdr iterms)))))
+          (if (= (remainder (car items) 2) prop)
+              (iter (append target (list (car items))) (cdr items))
+           (iter target (cdr items)))))
     (append (list a) (iter (list) y))))
 
 (same-parity 1 2 3 4 5 6 7)
 (same-parity 2 3 4 5 6 7)
 #(1 3 5 7)
 #(2 4 6)
+
+# 2.21
+(define (square-list items)
+  (if (null? items)
+    nil
+    (cons (* (car items) (car items)) (square-list (cdr items)))))
+
+(define (map proc items)
+  (if (null? items)
+    nil
+    (cons (proc (car items)) (map proc (cdr items)))))
+
+(define (square-list items)
+  (map (lambda (x) (* x x)) items))
+
+# 2.22
+#以下代码的顺序写反了
+(cons (square (car things))
+  answer)
+
+#修改后的程序实现了顺序正确的功能,但是因为第一位是nil,导致第一位元素始终为空
+#((((() . 1) . 9) . 25) . 49)
+
+# 2.23
+(for-each (lambda (x) (newline) (display x))
+  (list 57 321 88))
+
+(define (for-each proc items)
+  (if (null? items)
+    #t
+    (and (proc (car items)) (for-each proc (cdr items)))))
