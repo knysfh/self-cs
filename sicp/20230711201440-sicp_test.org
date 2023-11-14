@@ -1575,3 +1575,24 @@ c)
       (and (= (torque (left-branch mobile)) (torque (right-branch mobile)))
            (balanced? (branch-structure (left-branch mobile)))
            (balanced? (branch-structure (right-branch mobile))))))
+
+# 2.30
+(define (square-list items)
+  (cond ((null? items) nil)
+        ((not (pair? items)) (* items items))
+        (else (cons (square-list (car items))
+                    (square-list (cdr items))))))
+
+(define (map-square-list items)
+  (map (lambda (sub-items)
+         (if (pair? sub-items)
+             (map-square-list sub-items)
+             (* sub-items sub-items)))
+       items))
+
+(define x (list 1 (list 2 (list 3 4) 5) (list 6 7)))
+
+(square-list x)
+(map-square-list x)
+#(1 (4 (9 16) 25) (36 49))
+#(1 (4 (9 16) 25) (36 49))
