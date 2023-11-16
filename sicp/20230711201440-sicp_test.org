@@ -1596,3 +1596,29 @@ c)
 (map-square-list x)
 #(1 (4 (9 16) 25) (36 49))
 #(1 (4 (9 16) 25) (36 49))
+
+# 2.31
+(define (tree-map proc tree)
+  (map (lambda (sub-items)
+         (if (pair? sub-items)
+             (tree-map proc sub-items)
+             (proc sub-items)))
+       tree))
+
+(define (square x)
+  (* x x))
+
+(define (square-tree tree)
+  (tree-map square tree))
+
+(define x (list 1 (list 2 (list 3 4) 5) (list 6 7)))
+(square-tree x)
+
+# 2.32
+(define (subsets s)
+  (if (null? s)
+      (list nil)
+      (let ((rest (subsets (cdr s))))
+        (append rest (map (lambda (x) (car (cons s x))) rest)))))
+
+(subsets (list 1 2 3))
