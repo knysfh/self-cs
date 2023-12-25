@@ -1844,6 +1844,10 @@ c)
 (define (flatmap proc seq)
   (accumulate append nil (map proc seq)))
 
+# flatmap的作用可以是展开潜嵌套列表,并在展开时进行计算
+# (flatmap (lambda (x) (map (lambda (y) (+ y 1)) x)) (list (list 1 2 3) (list 3 4 5)))
+# (2 3 4 4 5 6)
+
  (define (prime? x)
    (define (test divisor)
      (cond ((> (* divisor divisor) x) true)
@@ -1916,3 +1920,63 @@ c)
 
 (ordered-triples-sum 6 7)
 #((4 2 1))
+
+# 2.42
+# 该题的难度在于理解每个函数的作用,flatmap函数的作用尤为重要
+# flatmap的作用可以是展开潜嵌套列表,并在展开时进行计算
+# (flatmap (lambda (x) (map (lambda (y) (+ y 1)) x)) (list (list 1 2 3) (list 3 4 5)))
+# (2 3 4 4 5 6)
+
+(define (adjoin-position row col rest)
+   (cons (list row col) rest))
+
+(define (check a b)
+  (let ((ax (car a))
+        (ay (cadr a))
+        (bx (car b))
+        (by (cadr b)))
+    (and (not (= ax bx)) (not (= ay by))
+         (not (= (abs (- ax bx)) (abs (- ay by)))))))
+
+(define (safe? y)
+  (= 0 (accumulate + 0
+                   (map (lambda (x)
+                          (if (check (car y) x) 0 1))
+                        (cdr y)))))
+
+(define (flatmap proc seq)
+  (accumulate append nil (map proc seq)))
+
+(define (accumulate op initial sequence)
+  (if (null? sequence)
+      initial
+      (op (car sequence)
+          (accumulate op initial (cdr sequence)))))
+
+(define (enumerate-interval low high)
+  (if (> low high)
+      nil
+      (cons low (enumerate-interval (+ low 1) high))))
+
+(define (filter predicate sequence)
+   (cond ((null? sequence) nil)
+         ((predicate (car sequence))
+          (cons (car sequence)
+                (filter predicate (cdr sequence))))
+         (else (filter predicate (cdr sequence)))))
+
+(define (queens board-size)
+  (define (queen-cols k)
+    (if (= k 0)
+        (list '())
+        (filter
+         (lambda (positions) (safe? positions))
+         (flatmap
+          (lambda (rest-of-queens)
+            (map (lambda (new-row)
+                   (adjoin-position new-row k rest-of-queens))
+                 (enumerate-interval 1 board-size)))
+          (queen-cols (- k 1))))))
+        (queen-cols board-size))
+
+(length (queens 8))
