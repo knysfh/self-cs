@@ -2497,3 +2497,212 @@ tree->list-2展开
 # 2.64
 # http://community.schemewiki.org/?sicp-ex-2.64
 # TODO partial-tree递归有点绕
+
+# 2.65
+# intersection-set与union-set操作类似
+(define (entry tree) (car tree))
+(define (left-branch tree) (cadr tree))
+(define (right-branch tree) (caddr tree))
+(define (make-tree entry left right)
+  (list entry left right))
+
+(define (element-of-set? x set)
+  (cond ((null? set) false)
+        ((= x (car set)) true)
+        ((< x (car set)) (element-of-set? x (left-branch set)))
+        ((> x (car set)) (element-of-set? x (right-branch set)))))
+
+(define (list->tree elements)
+  (car (partial-tree elements (length elements))))
+
+(define (partial-tree elts n)
+  (if (= n 0)
+      (cons '() elts)
+      (let ((left-size (quotient (- n 1) 2)))
+        (let ((left-result (partial-tree elts left-size)))
+          (let ((left-tree (car left-result))
+                (non-left-elts (cdr left-result))
+                (right-size (- n (+ left-size 1))))
+            (let ((this-entry (car non-left-elts))
+                  (right-result (partial-tree (cdr non-left-elts)
+                                              right-size)))
+              (let ((right-tree (car right-result))
+                    (remaining-elts (cdr right-result)))
+                (cons (make-tree this-entry left-tree right-tree)
+                      remaining-elts))))))))
+
+(define (tree->list-1 tree)
+  (if (null? tree)
+      '()
+      (append (tree->list-1 (left-branch tree))
+              (cons (entry tree)
+                    (tree->list-1 (right-branch tree))))))
+
+(define (union-set s1 s2)
+  (cond ((null? s1) s2)
+        ((null? s2) s1)
+        ((> (car s1) (car s2)) (cons (car s2) (union-set s1 (cdr s2))))
+        ((= (car s1) (car s2)) (cons (car s1) (union-set (cdr s1) (cdr s2))))
+        (else (cons (car s1) (union-set (cdr s1) s2)))))
+
+(define (union-set-265 s t)
+  (cond ((null? s) t)
+        ((null? t) s)
+        (else (list->tree (union-set (tree->list-1 s) (tree->list-1 t))))))
+
+(union-set-265 (list->tree '(1 2 4 5 6)) (list->tree '(1 3 4 5 7)))
+#(4 (2 (1 () ()) (3 () ())) (6 (5 () ()) (7 () ())))
+
+
+# 2.66
+(define (entry tree) (car tree))
+(define (left-branch tree) (cadr tree))
+(define (right-branch tree) (caddr tree))
+(define (make-tree key value left right)
+  (list '(key value) left right))
+(define (key n)
+  (car n))
+
+(define (value n)
+  (cdr n))
+
+(define (lookup1 given-key set-of-records)
+  (cond ((null? set-of-records) false)
+        ((= given-key (key (entry set-of-records)))
+         (value (entry set-of-records)))
+        ((> given-key (key (entry set-of-records)))
+         (lookup1 given-key (right-branch set-of-records)))
+        (else (lookup1 given-key (left-branch set-of-records)))))
+
+(define tmp-set '((7 0) ((3 10) ((1 18) () ()) ((5 117) () ())) ((9 20) () ((11 14) () ()))))
+
+(lookup1 5 tmp-set)
+#(117)
+
+# 2.67
+(define (make-leaf symbol weight)
+  (list 'leaf symbol weight))
+
+(define (leaf? object)
+  (eq? (car object) 'leaf))
+
+(define (symbol-leaf x) (cadr x))
+(define (weight-leaf x) (caddr x))
+
+(define (make-code-tree left right)
+  (list left
+        right
+        (append (symbols left) (symbols right))
+        (+ (weight left) (weight right))))
+
+(define (left-branch tree) (car tree))
+(define (right-branch tree) (cadr tree))
+(define (symbols tree)
+  (if (leaf? tree)
+      (list (symbol-leaf tree))
+      (caddr tree)))
+
+(define (weight tree)
+  (if (leaf? tree)
+      (weight-leaf tree)
+      (cadddr tree)))
+
+(define (decode bits tree)
+  (define (decode-1 bits current-branch)
+    (if (null? bits)
+        '()
+        (let ((next-branch
+               (choose-branch (car bits) current-branch)))
+          (if (leaf? next-branch)
+              (cons (symbol-leaf next-branch)
+                    (decode-1 (cdr bits) tree))
+              (decode-1 (cdr bits) next-branch)))))
+  (decode-1 bits tree))
+
+(define (choose-branch bit branch)
+  (cond ((= bit 0) (left-branch branch))
+        ((= bit 1) (right-branch branch))
+        (else (error "bad bit -- CHOOSE-BRANCH" bit))))
+
+(define sample-tree
+  (make-code-tree (make-leaf 'A 4)
+                  (make-code-tree
+                   (make-leaf 'B 2)
+                   (make-code-tree (make-leaf 'D 1)
+                                   (make-leaf 'C 1)))))
+
+(define sample-message '(0 1 1 0 0 1 0 1 0 1 1 1 0))
+(decode sample-message sample-tree)
+# (A D A B B C A)
+
+# 2.68
+#lang sicp
+(define (make-leaf symbol weight)
+  (list 'leaf symbol weight))
+
+(define (leaf? object)
+  (eq? (car object) 'leaf))
+
+(define (symbol-leaf x) (cadr x))
+(define (weight-leaf x) (caddr x))
+
+(define (make-code-tree left right)
+  (list left
+        right
+        (append (symbols left) (symbols right))
+        (+ (weight left) (weight right))))
+
+(define (left-branch tree) (car tree))
+(define (right-branch tree) (cadr tree))
+(define (symbols tree)
+  (if (leaf? tree)
+      (list (symbol-leaf tree))
+      (caddr tree)))
+
+(define (weight tree)
+  (if (leaf? tree)
+      (weight-leaf tree)
+      (cadddr tree)))
+
+(define (decode bits tree)
+  (define (decode-1 bits current-branch)
+    (if (null? bits)
+        '()
+        (let ((next-branch
+               (choose-branch (car bits) current-branch)))
+          (if (leaf? next-branch)
+              (cons (symbol-leaf next-branch)
+                    (decode-1 (cdr bits) tree))
+              (decode-1 (cdr bits) next-branch)))))
+  (decode-1 bits tree))
+
+(define (choose-branch bit branch)
+  (cond ((= bit 0) (left-branch branch))
+        ((= bit 1) (right-branch branch))
+        (else (error "bad bit -- CHOOSE-BRANCH" bit))))
+
+(define sample-tree
+  (make-code-tree (make-leaf 'A 4)
+                  (make-code-tree
+                   (make-leaf 'B 2)
+                   (make-code-tree (make-leaf 'D 1)
+                                   (make-leaf 'C 1)))))
+
+(define (encode message tree)
+  (if (null? message)
+      '()
+      (append (encode-symbol (car message) tree)
+              (encode (cdr message) tree))))
+
+(define (encode-symbol sym tree)
+  (if (leaf? tree)
+      (if (eq? sym (symbol-leaf tree))
+          '()
+          (error "missing symbol: ENCODE-SYMBOL" sym))
+      (let ((left (left-branch tree)))
+        (if (memq sym (symbols left))
+            (cons 0 (encode-symbol sym left))
+            (cons 1 (encode-symbol sym (right-branch tree)))))))
+
+(encode '(A D A B B C A) sample-tree)
+#(0 1 1 0 0 1 0 1 0 1 1 1 0)
